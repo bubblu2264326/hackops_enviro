@@ -53,10 +53,16 @@ jobs:
             p/typescript
             p/typescript-security
             p/jwt
-          generateSarif: true
-          
-      - name: Upload SARIF file
-        uses: github/codeql-action/upload-sarif@v3
-        if: always()
+          outputFormat: text
+          outputFile: semgrep-results.txt
+
+      - name: Show Semgrep Results
+        run: cat semgrep-results.txt
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
         with:
-          sarif_file: semgrep.sarif
+          languages: javascript
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
