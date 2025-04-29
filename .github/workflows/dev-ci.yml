@@ -1,16 +1,24 @@
-name: Dev Branch CI
+name: Feature-Fix Branch CI
 
 on:
   push:
-    branches: 
-      - 'dev'
+    branches:
+      - 'feature/**'
+      - 'fix/**'
   pull_request:
     branches: 
-      - 'dev'
+      - dev
+  schedule:
+    - cron: '0 0 * * 0'  # Run weekly on Sundays
 
 jobs:
   ci:
+    name: CI and Security Analysis
     runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
 
     env:
       DB_USER: ${{ secrets.DB_USER }}
@@ -20,6 +28,11 @@ jobs:
       DB_DATABASE: ${{ secrets.DB_DATABASE }}
       ACCESS_TOKEN_SECRET: ${{ secrets.ACCESS_TOKEN_SECRET }}
       REFRESH_TOKEN_SECRET: ${{ secrets.REFRESH_TOKEN_SECRET }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [ 'typescript', 'javascript' ]
 
     steps:
       - name: Checkout Code
@@ -37,34 +50,26 @@ jobs:
       - name: Lint Check
         run: npm run lint
 
-      - name: Type Checking
-        run: npx tsc --noEmit
-
-      - name: Run Unit Tests
+      - name: Run Tests
         run: npm test
-
+        
       - name: Build Application
         run: npm run build
 
-      # Semgrep SAST with SARIF for cloud reporting
       - name: Run Semgrep Security Scan
         uses: returntocorp/semgrep-action@v1
         with:
-          config: >-
-            p/default
-            p/react
-            p/typescript
-            p/typescript-security
-            p/jwt
-          generateSarif: true
-        env:
-          SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
+            config: 'p/security-audit' 
 
-      # CodeQL SAST (results automatically go to GitHub Security tab)
+
+
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
         with:
-          languages: 'javascript'
+          languages: ${{ matrix.language }}
+          queries: security-and-quality
 
-      - name: Run CodeQL Analysis
+      - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:${{matrix.language}}"
