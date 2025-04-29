@@ -53,13 +53,7 @@ jobs:
 
       - name: Run Semgrep Scan (No SARIF)
         uses: returntocorp/semgrep-action@v1
-        with:
-          config: >-
-            p/default
-            p/react
-            p/typescript
-            p/typescript-security
-            p/jwt
+            
         env:
           SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
 
