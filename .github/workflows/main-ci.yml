@@ -45,12 +45,16 @@ jobs:
       - name: Type Checking
         run: npx tsc --noEmit
 
+
      # - name: Run Unit Tests
       #  run: npm test
 
       - name: Build Application
         run: npm run build
-
+      - name: Run Semgrep Scan (No SARIF)
+        uses: returntocorp/semgrep-action@v1
+        env:
+          SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
         with:
