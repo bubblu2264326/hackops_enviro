@@ -2,12 +2,9 @@ name: Feature-Fix Branch CI
 
 on:
   push:
-    branches:
-      - 'feature/**'
-      - 'fix/**'
+      branches: ['feature/**', 'fix/**']
   pull_request:
-    branches: 
-      - dev
+    branches: ['dev']
 
 jobs:
   ci:
