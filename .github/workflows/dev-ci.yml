@@ -1,4 +1,4 @@
-name: Feature-Fix Branch CI
+name: Dev Branch CI
 
 on:
   push:
