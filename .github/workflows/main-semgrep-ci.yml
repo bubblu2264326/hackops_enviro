@@ -1,0 +1,47 @@
+name: Semgrep Code Scan
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: '0 3 * * 0'  # Every Sunday at 3 AM UTC
+
+jobs:
+  semgrep:
+    name: Semgrep Scan
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      security-events: write  # This permission is needed to upload SARIF results
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Semgrep
+        uses: returntocorp/semgrep-action@v1
+        env:
+          SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}  # Ensure this token is set in your repo secrets
+        with:
+          config: >-
+            p/default
+            p/react
+            p/typescript
+            p/typescript-security
+            p/jwt
+          generateSarif: true  # This generates SARIF results
+          outputFile: results.sarif  # This stores the results in results.sarif file
+
+      - name: List files
+        run: ls -la  # This step is optional, it lists the files in the working directory
+
+      - name: Upload SARIF file
+        if: always()  # Ensure this step runs even if the scan fails
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: results.sarif  # Upload the SARIF results file
+          wait-for-processing: true
+          category: semgrep-results  # This is the category under which the results are listed
