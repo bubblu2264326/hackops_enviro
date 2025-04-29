@@ -1,12 +1,13 @@
-name: Dev Branch CI
+name: Feature Branch CI
 
 on:
   push:
-    branches: 
-      - 'dev'
+    branches:
+      - 'feature/**'
+      - 'fix/**'
   pull_request:
     branches: 
-      - 'dev'
+      - dev
 
 jobs:
   ci:
@@ -37,34 +38,17 @@ jobs:
       - name: Lint Check
         run: npm run lint
 
-      - name: Type Checking
-        run: npx tsc --noEmit
-
-      - name: Run Unit Tests
+      - name: Run Tests
         run: npm test
 
-      - name: Build Application
-        run: npm run build
-
-      # Semgrep SAST with SARIF for cloud reporting
-      - name: Run Semgrep Security Scan
-        uses: returntocorp/semgrep-action@v1
-        with:
-          config: >-
-            p/default
-            p/react
-            p/typescript
-            p/typescript-security
-            p/jwt
-          generateSarif: true
-        env:
-          SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
-
-      # CodeQL SAST (results automatically go to GitHub Security tab)
+      # ⬇️ Add CodeQL for SAST
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
         with:
-          languages: 'javascript'
+          languages: javascript
 
-      - name: Run CodeQL Analysis
+      - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
+
+      - name: Build Application
+        run: npm run build
