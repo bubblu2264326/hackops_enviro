@@ -60,7 +60,7 @@ jobs:
         uses: returntocorp/semgrep-action@v1
         with:
           publishToken: ${{ secrets.SEMGREP_APP_TOKEN }}
-          config: 'p/security-audit'
+
 
 
       - name: Initialize CodeQL
