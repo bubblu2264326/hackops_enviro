@@ -59,17 +59,9 @@ jobs:
       - name: Run Semgrep Security Scan
         uses: returntocorp/semgrep-action@v1
         with:
-          config: >-
-            p/default
-            p/react
-            p/typescript
-            p/typescript-security
-            p/jwt
-          outputFormat: text
-          outputFile: semgrep-results.txt
+            config: 'p/security-audit' 
 
-      - name: Show Semgrep Results
-        run: cat semgrep-results.txt
+
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
