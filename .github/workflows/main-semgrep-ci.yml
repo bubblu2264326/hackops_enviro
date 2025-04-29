@@ -25,13 +25,6 @@ jobs:
         uses: returntocorp/semgrep-action@v1
         env:
           SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}  # Ensure this token is set in your repo secrets
-        with:
-          config: >-
-            p/default
-            p/react
-            p/typescript
-            p/typescript-security
-            p/jwt
           generateSarif: true  # This generates SARIF results
           outputFile: results.sarif  # This stores the results in results.sarif file
 
