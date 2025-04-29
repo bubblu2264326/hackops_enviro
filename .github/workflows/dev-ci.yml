@@ -1,13 +1,12 @@
-name: Feature Branch CI
+name: Dev Branch CI
 
 on:
   push:
     branches:
-      - 'feature/**'
-      - 'fix/**'
+      - 'dev'
   pull_request:
-    branches: 
-      - dev
+    branches:
+      - 'dev'
 
 jobs:
   ci:
@@ -21,6 +20,7 @@ jobs:
       DB_DATABASE: ${{ secrets.DB_DATABASE }}
       ACCESS_TOKEN_SECRET: ${{ secrets.ACCESS_TOKEN_SECRET }}
       REFRESH_TOKEN_SECRET: ${{ secrets.REFRESH_TOKEN_SECRET }}
+      SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
 
     steps:
       - name: Checkout Code
@@ -38,17 +38,32 @@ jobs:
       - name: Lint Check
         run: npm run lint
 
-      - name: Run Tests
+      - name: TypeScript Type Check
+        run: npx tsc --noEmit
+
+      - name: Run Unit Tests
         run: npm test
-
-      # ⬇️ Add CodeQL for SAST
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@v3
-        with:
-          languages: javascript
-
-      - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v3
 
       - name: Build Application
         run: npm run build
+
+      - name: Run Semgrep Security Scan
+        uses: returntocorp/semgrep-action@v1
+        with:
+          config: >-
+            p/default
+            p/react
+            p/typescript
+            p/typescript-security
+            p/jwt
+          generateSarif: true
+        env:
+          SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript  # or use: ['javascript', 'typescript'] if needed
+
+      - name: Run CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
