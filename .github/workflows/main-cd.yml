@@ -33,7 +33,7 @@ jobs:
       ACCESS_TOKEN_SECRET: test_access_secret
       REFRESH_TOKEN_SECRET: test_refresh_secret
       NEXT_PUBLIC_API_URL: http://localhost:3000
-      DOCKER_IMAGE: yourdockerhubusername/hackops-enviro:latest
+      DOCKER_IMAGE: bubblu2264326/hackops-enviro:latest
 
     steps:
       - name: Checkout Code
