@@ -1,61 +1,75 @@
- name: Main Branch CI
- 
- on:
-   push:
- #    branches:
- #      - 'main'
-   pull_request:
-     branches:
-       - 'main'
- 
- jobs:
-   ci:
-     runs-on: ubuntu-latest
- 
-     permissions:
-       contents: read
-       id-token: write
-       security-events: write # Needed for CodeQL results
- 
-     env:
-       DB_USER: ${{ secrets.DB_USER }}
-       DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-       DB_HOST: ${{ secrets.DB_HOST }}
-       DB_PORT: ${{ secrets.DB_PORT }}
-       DB_DATABASE: ${{ secrets.DB_DATABASE }}
-       ACCESS_TOKEN_SECRET: ${{ secrets.ACCESS_TOKEN_SECRET }}
-       REFRESH_TOKEN_SECRET: ${{ secrets.REFRESH_TOKEN_SECRET }}
- 
-     steps:
-       - name: Checkout Code
-         uses: actions/checkout@v4
- 
-       - name: Setup Node.js
-         uses: actions/setup-node@v4
-         with:
-           node-version: '18'
-           cache: 'npm'
- 
-       - name: Install Dependencies
-         run: npm ci
- 
-       - name: Lint Check
-         run: npm run lint
- 
-       - name: Type Checking
-         run: npx tsc --noEmit
- 
- 
-      # - name: Run Unit Tests
-       #  run: npm test
- 
-       - name: Build Application
-         run: npm run build
- 
-       - name: Initialize CodeQL
-         uses: github/codeql-action/init@v3
-         with:
-           languages: javascript
- 
-       - name: Run CodeQL Analysis
-         uses: github/codeql-action/analyze@v3
+name: Dev Branch CI
+
+on:
+  push:
+    branches:
+      - 'feature/**'
+      - 'fix/**'
+  pull_request:
+    branches: 
+      - dev
+  schedule:
+    - cron: '0 0 * * 0'  # Run weekly on Sundays
+
+jobs:
+  ci:
+    name: CI and Security Analysis
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    env:
+      DB_USER: ${{ secrets.DB_USER }}
+      DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+      DB_HOST: ${{ secrets.DB_HOST }}
+      DB_PORT: ${{ secrets.DB_PORT }}
+      DB_DATABASE: ${{ secrets.DB_DATABASE }}
+      ACCESS_TOKEN_SECRET: ${{ secrets.ACCESS_TOKEN_SECRET }}
+      REFRESH_TOKEN_SECRET: ${{ secrets.REFRESH_TOKEN_SECRET }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [ 'javascript' ]
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Lint Check
+        run: npm run lint
+
+      - name: Run Tests
+        run: npm test
+        
+      - name: Build Application
+        run: npm run build
+
+      - name: Run Semgrep Security Scan
+        uses: returntocorp/semgrep-action@v1
+        with:
+            config: 'p/security-audit' 
+
+
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+          queries: security-and-quality
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:${{matrix.language}}"
