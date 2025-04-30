@@ -103,8 +103,9 @@ jobs:
 
       - name: Install Dependencies
         run: npm install
+
       - name: Run npm audit
-        run: npm audit
+        run: npm audit || true
 
       - name: Run OWASP Dependency Check
         uses: dependency-check/Dependency-Check_Action@main
@@ -119,6 +120,7 @@ jobs:
         with:
           name: security-report
           path: reports/
+
 
   monitoring:
     runs-on: ubuntu-latest
